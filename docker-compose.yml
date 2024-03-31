@@ -2,20 +2,41 @@ version: "3.3"
 # Este es un archivo de docker-compose.yml para configurar el uso de contenedores de software.
 
 services:
-  modulo_2:
-    # Imágen a utilizar:
-    image: python:3.9.5
-    # Nombre del container:
-    container_name: modulo_2
-    # Carpetas enlazadas:
+  db:
+    image: postgres:13.2
     volumes:
-      # Source code directory:
+      - ./database:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: marvel_db
+      POSTGRES_USER: inove_user
+      POSTGRES_PASSWORD: 123Marvel!
+    ports:
+      - 5432:5432
+
+
+  adminer:
+    image: adminer:4.8.0
+    ports:
+      - 8080:8080
+    depends_on: ["db"]
+
+
+  modulo_4:
+    build:
+      context: .
+      dockerfile: dockerfile
+    image: modulo_4a
+    container_name: modulo_4a
+    volumes:
       - type: bind
         source: .
         target: /opt/back_end
-    # Puertos enlazados:
     ports:
         - "8000:8000"
-    # Control de consola:
+    environment:
+      DB_ENGINE: POSTGRES
     stdin_open: true
     tty: true
+    command: python manage.py runserver 0.0.0.0:8000
+    depends_on:
+      - db
