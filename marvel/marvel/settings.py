@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/3.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -29,16 +29,24 @@ ALLOWED_HOSTS = []
 
 
 # Application definition
-
-INSTALLED_APPS = [
+BASE_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'applications.e_commerce',
 ]
+
+# Acá van las apps de 3ros que necesitamos agregar
+# para que Django las encuentre.
+THIRD_APPS = ['rest_framework']
+
+# Acá van las apps que creamos nosotros.
+LOCAL_APPS = ['applications.e_commerce']
+
+INSTALLED_APPS = BASE_APPS + THIRD_APPS + LOCAL_APPS
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -70,16 +78,37 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'marvel.wsgi.application'
 
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny'
+    ]
+}
 
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+if os.getenv("DB_ENGINE") == "POSTGRES":
+
+    DATABASES = {
+        'default': {
+            # 'ENGINE': 'django.db.backends.postgresql_psycopg2' --> En desuso.
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'marvel_db',        # POSTGRES_DB
+            'USER' : 'inove_user',      # POSTGRES_USER
+            'PASSWORD' : '123Marvel!',  # POSTGRES_PASSWORD
+            'HOST':'db',                # Nombre del servicio
+            'PORT': '5432'              # Número del puerto
+        }
     }
-}
+
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+
 
 
 # Password validation
